@@ -56,6 +56,9 @@ export const metadata: Metadata = {
         index: true,
         follow: true,
     },
+    alternates: {
+        canonical: "https://www.jsonrendercn.com",
+    },
     icons: {
         icon: "/favicon.ico",
     },
