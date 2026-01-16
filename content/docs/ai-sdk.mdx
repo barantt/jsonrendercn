@@ -1,0 +1,102 @@
+---
+title: AI SDK 集成
+description: 将 json-render 与 Vercel AI SDK 一起使用以实现无缝流式传输。
+---
+
+## 安装
+
+```bash
+npm install ai
+```
+
+## API 路由设置
+
+```typescript
+// app/api/generate/route.ts
+import { streamText } from 'ai';
+import { generateCatalogPrompt } from '@json-render/core';
+import { catalog } from '@/lib/catalog';
+
+export async function POST(req: Request) {
+  const { prompt, currentTree } = await req.json();
+
+  const systemPrompt = generateCatalogPrompt(catalog);
+
+  // 可选地包含当前 UI 状态作为上下文
+  const contextPrompt = currentTree
+    ? `\n\n当前 UI 状态:\n${JSON.stringify(currentTree, null, 2)}`
+    : '';
+
+  const result = streamText({
+    model: 'anthropic/claude-opus-4.5',
+    system: systemPrompt + contextPrompt,
+    prompt,
+  });
+
+  return new Response(result.textStream, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+    },
+  });
+}
+```
+
+## 客户端 Hook
+
+在客户端使用 `useUIStream`：
+
+```tsx
+'use client';
+
+import { useUIStream } from '@json-render/react';
+
+function GenerativeUI() {
+  const { tree, isLoading, error, generate } = useUIStream({
+    endpoint: '/api/generate',
+  });
+
+  return (
+    <div>
+      <button
+        onClick={() => generate('创建一个包含指标的仪表板')}
+        disabled={isLoading}
+      >
+        {isLoading ? '生成中...' : '生成'}
+      </button>
+
+      {error && <p className="text-red-500">{error.message}</p>}
+
+      <Renderer tree={tree} registry={registry} />
+    </div>
+  );
+}
+```
+
+## 提示词工程
+
+`generateCatalogPrompt` 函数创建一个优化的提示词，它：
+
+- 列出所有可用组件及其属性
+- 描述可用操作
+- 指定预期的 JSON 输出格式
+- 包含示例以获得更好的生成效果
+
+## 自定义系统提示词
+
+```typescript
+const basePrompt = generateCatalogPrompt(catalog);
+
+const customPrompt = `
+${basePrompt}
+
+附加说明：
+- 始终使用 Card 组件对相关内容进行分组
+- 指标优先使用水平布局（Row）
+- 使用一致的间距，设置 padding="md"
+`;
+```
+
+## 下一步
+
+了解[渐进式流式传输](./streaming.mdx)。

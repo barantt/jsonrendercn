@@ -1,0 +1,92 @@
+---
+title: 目录
+description: 目录定义了 AI 可以生成的内容。它是您的保护规则。
+---
+
+## 什么是目录？
+
+目录是一个模式，定义了：
+
+- **组件** — AI 可以创建的 UI 元素
+- **操作** — AI 可以触发的操作
+- **验证函数** — 表单输入的自定义验证器
+
+## 创建目录
+
+```typescript
+import { createCatalog } from '@json-render/core';
+import { z } from 'zod';
+
+const catalog = createCatalog({
+  components: {
+    // 使用属性模式定义每个组件
+    Card: {
+      props: z.object({
+        title: z.string(),
+        description: z.string().nullable(),
+        padding: z.enum(['sm', 'md', 'lg']).default('md'),
+      }),
+      hasChildren: true, // 可以包含其他组件
+    },
+
+    Metric: {
+      props: z.object({
+        label: z.string(),
+        valuePath: z.string(), // JSON 指针指向数据
+        format: z.enum(['currency', 'percent', 'number']),
+      }),
+    },
+  },
+
+  actions: {
+    submit_form: {
+      params: z.object({
+        formId: z.string(),
+      }),
+      description: '提交表单',
+    },
+
+    export_data: {
+      params: z.object({
+        format: z.enum(['csv', 'pdf', 'json']),
+      }),
+    },
+  },
+
+  validationFunctions: {
+    isValidEmail: {
+      description: '验证电子邮件格式',
+    },
+    isPhoneNumber: {
+      description: '验证电话号码',
+    },
+  },
+});
+```
+
+## 组件定义
+
+目录中的每个组件都有：
+
+```typescript
+{
+  props: z.object({...}),  // 属性的 Zod 模式
+  hasChildren?: boolean,    // 可以有子元素吗？
+  description?: string,     // 帮助 AI 理解何时使用它
+}
+```
+
+## 生成 AI 提示词
+
+使用 `generateCatalogPrompt` 为 AI 创建系统提示词：
+
+```typescript
+import { generateCatalogPrompt } from '@json-render/core';
+
+const systemPrompt = generateCatalogPrompt(catalog);
+// 将此作为系统提示词传递给您的 AI 模型
+```
+
+## 下一步
+
+了解如何为您的目录[注册 React 组件](./components.mdx)。

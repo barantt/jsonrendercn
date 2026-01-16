@@ -1,0 +1,138 @@
+---
+title: 可见性
+description: 根据数据、身份验证或逻辑有条件地显示或隐藏组件。
+---
+## VisibilityProvider
+
+用 VisibilityProvider 包装您的应用以启用条件渲染：
+
+```tsx
+import { VisibilityProvider } from '@json-render/react';
+
+function App() {
+  return (
+    <DataProvider initialData={data}>
+      <VisibilityProvider>
+        {/* 组件现在可以使用可见性条件 */}
+      </VisibilityProvider>
+    </DataProvider>
+  );
+}
+```
+
+## 基于路径的可见性
+
+根据数据值显示/隐藏：
+
+```json
+{
+  "type": "Alert",
+  "props": { "message": "表单有错误" },
+  "visible": { "path": "/form/hasErrors" }
+}
+
+// 当 /form/hasErrors 为真时可见
+```
+
+## 基于身份验证的可见性
+
+根据身份验证状态显示/隐藏：
+
+```json
+{
+  "type": "AdminPanel",
+  "visible": { "auth": "signedIn" }
+}
+
+// 选项："signedIn"、"signedOut"、"admin" 等
+```
+
+## 逻辑表达式
+
+使用逻辑运算符组合条件：
+
+```json
+// AND - 所有条件必须为真
+{
+  "type": "SubmitButton",
+  "visible": {
+    "and": [
+      { "path": "/form/isValid" },
+      { "path": "/form/hasChanges" }
+    ]
+  }
+}
+
+// OR - 任何条件必须为真
+{
+  "type": "HelpText",
+  "visible": {
+    "or": [
+      { "path": "/user/isNew" },
+      { "path": "/settings/showHelp" }
+    ]
+  }
+}
+
+// NOT - 反转条件
+{
+  "type": "WelcomeBanner",
+  "visible": {
+    "not": { "path": "/user/hasSeenWelcome" }
+  }
+}
+```
+
+## 比较运算符
+
+```json
+// 等于
+{
+  "visible": {
+    "eq": [{ "path": "/user/role" }, "admin"]
+  }
+}
+
+// 大于
+{
+  "visible": {
+    "gt": [{ "path": "/cart/total" }, 100]
+  }
+}
+
+// 可用：eq、ne、gt、gte、lt、lte
+```
+
+## 复杂示例
+
+```json
+{
+  "type": "RefundButton",
+  "props": { "label": "处理退款" },
+  "visible": {
+    "and": [
+      { "auth": "signedIn" },
+      { "eq": [{ "path": "/user/role" }, "support"] },
+      { "gt": [{ "path": "/order/amount" }, 0] },
+      { "not": { "path": "/order/isRefunded" } }
+    ]
+  }
+}
+```
+
+## 在组件中使用
+
+```tsx
+import { useIsVisible } from '@json-render/react';
+
+function ConditionalContent({ element, children }) {
+  const isVisible = useIsVisible(element.visible);
+
+  if (!isVisible) return null;
+  return <div>{children}</div>;
+}
+```
+
+## 下一步
+
+了解[表单验证](./validation.mdx)。

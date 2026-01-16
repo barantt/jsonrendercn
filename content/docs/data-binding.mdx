@@ -1,0 +1,123 @@
+---
+title: 数据绑定
+description: 使用 JSON 指针路径将 UI 组件连接到应用程序数据。
+---
+
+## JSON 指针路径
+
+json-render 使用 JSON 指针（RFC 6901）作为数据路径：
+
+```json
+// 给定此数据：
+{
+  "user": {
+    "name": "Alice",
+    "email": "alice@example.com"
+  },
+  "metrics": {
+    "revenue": 125000,
+    "growth": 0.15
+  }
+}
+
+// 这些路径访问：
+"/user/name"        -> "Alice"
+"/metrics/revenue"  -> 125000
+"/metrics/growth"   -> 0.15
+```
+
+## DataProvider
+
+用 DataProvider 包装您的应用以启用数据绑定：
+
+```tsx
+import { DataProvider } from '@json-render/react';
+
+function App() {
+  const initialData = {
+    user: { name: 'Alice' },
+    form: { email: '', message: '' },
+  };
+
+  return (
+    <DataProvider initialData={initialData}>
+      {/* 您的 UI */}
+    </DataProvider>
+  );
+}
+```
+
+## 读取数据
+
+使用 `useDataValue` 进行只读访问：
+
+```tsx
+import { useDataValue } from '@json-render/react';
+
+function UserGreeting() {
+  const name = useDataValue('/user/name');
+  return <h1>你好，{name}！</h1>;
+}
+```
+
+## 双向绑定
+
+使用 `useDataBinding` 进行读写访问：
+
+```tsx
+import { useDataBinding } from '@json-render/react';
+
+function EmailInput() {
+  const [email, setEmail] = useDataBinding('/form/email');
+
+  return (
+    <input
+      type="email"
+      value={email || ''}
+      onChange={(e) => setEmail(e.target.value)}
+    />
+  );
+}
+```
+
+## 使用数据上下文
+
+访问完整的数据上下文以处理高级用例：
+
+```tsx
+import { useData } from '@json-render/react';
+
+function DataDebugger() {
+  const { data, setData, getValue, setValue } = useData();
+
+  // 读取任何路径
+  const revenue = getValue('/metrics/revenue');
+
+  // 写入任何路径
+  const updateRevenue = () => setValue('/metrics/revenue', 150000);
+
+  // 替换所有数据
+  const resetData = () => setData({ user: {}, form: {} });
+
+  return <pre>{JSON.stringify(data, null, 2)}</pre>;
+}
+```
+
+## 在 JSON UI 树中
+
+AI 可以在组件属性中引用数据路径：
+
+```json
+{
+  "type": "Metric",
+  "props": {
+    "label": "总收入",
+    "valuePath": "/metrics/revenue",
+    "format": "currency"
+  }
+}
+```
+
+## 下一步
+
+了解用于用户交互的[操作](./actions.mdx)。

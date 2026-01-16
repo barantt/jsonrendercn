@@ -1,0 +1,99 @@
+---
+title: 组件
+description: 注册 React 组件以渲染您的目录类型。
+---
+
+## 组件注册表
+
+创建一个注册表，将目录组件类型映射到 React 组件：
+
+```tsx
+const registry = {
+  Card: ({ element, children }) => (
+    <div className="card">
+      <h2>{element.props.title}</h2>
+      {element.props.description && (
+        <p>{element.props.description}</p>
+      )}
+      {children}
+    </div>
+  ),
+
+  Button: ({ element, onAction }) => (
+    <button onClick={() => onAction(element.props.action, {})}>
+      {element.props.label}
+    </button>
+  ),
+};
+```
+
+## 组件属性
+
+每个组件接收这些属性：
+
+```typescript
+interface ComponentProps {
+  element: {
+    key: string;
+    type: string;
+    props: Record<string, unknown>;
+    children?: UIElement[];
+    visible?: VisibilityCondition;
+    validation?: ValidationSchema;
+  };
+  children?: React.ReactNode;  // 渲染的子元素
+  onAction: (name: string, params: object) => void;
+}
+```
+
+## 使用数据绑定
+
+使用 hooks 来读取和写入数据：
+
+```tsx
+import { useDataValue, useDataBinding } from '@json-render/react';
+
+const Metric = ({ element }) => {
+  // 只读值
+  const value = useDataValue(element.props.valuePath);
+
+  return (
+    <div className="metric">
+      <span className="label">{element.props.label}</span>
+      <span className="value">{formatValue(value)}</span>
+    </div>
+  );
+};
+
+const TextField = ({ element }) => {
+  // 双向绑定
+  const [value, setValue] = useDataBinding(element.props.valuePath);
+
+  return (
+    <input
+      value={value || ''}
+      onChange={(e) => setValue(e.target.value)}
+      placeholder={element.props.placeholder}
+    />
+  );
+};
+```
+
+## 使用渲染器
+
+```tsx
+import { Renderer } from '@json-render/react';
+
+function App() {
+  return (
+    <Renderer
+      tree={uiTree}
+      registry={registry}
+    />
+  );
+}
+```
+
+## 下一步
+
+了解用于动态值的[数据绑定](./data-binding.mdx)。

@@ -1,0 +1,137 @@
+---
+title: '@json-render/react API'
+description: React 组件、提供器和 hooks。
+---
+
+## 提供器
+
+### DataProvider
+
+```tsx
+<DataProvider initialData={object}>
+  {children}
+</DataProvider>
+```
+
+### ActionProvider
+
+```tsx
+<ActionProvider handlers={Record<string, ActionHandler}>
+  {children}
+</ActionProvider>
+
+type ActionHandler = (params: Record<string, unknown>) => void | Promise<void>;
+```
+
+### VisibilityProvider
+
+```tsx
+<VisibilityProvider auth={AuthState}>
+  {children}
+</VisibilityProvider>
+
+interface AuthState {
+  isSignedIn: boolean;
+  roles?: string[];
+}
+```
+
+### ValidationProvider
+
+```tsx
+<ValidationProvider functions={Record<string, ValidatorFn}>
+  {children}
+</ValidationProvider>
+
+type ValidatorFn = (value: unknown, args?: object) => boolean | Promise<boolean>;
+```
+
+## 组件
+
+### Renderer
+
+```tsx
+<Renderer
+  tree={UITree}
+  registry={ComponentRegistry}
+/>
+
+type ComponentRegistry = Record<string, React.ComponentType<ComponentProps>>;
+
+interface ComponentProps {
+  element: UIElement;
+  children?: React.ReactNode;
+  onAction: (name: string, params: object) => void;
+}
+```
+
+## Hooks
+
+### useUIStream
+
+```typescript
+const {
+  tree,       // UITree - 当前 UI 状态
+  isLoading,  // boolean - 流式传输时为 true
+  error,      // Error | null
+  generate,   // (prompt: string) => void
+  abort,      // () => void
+} = useUIStream({
+  endpoint: string,
+});
+```
+
+### useData
+
+```typescript
+const {
+  data,      // Record<string, unknown>
+  setData,   // (data: object) => void
+  getValue,  // (path: string) => unknown
+  setValue,  // (path: string, value: unknown) => void
+} = useData();
+```
+
+### useDataValue
+
+```typescript
+const value = useDataValue(path: string);
+```
+
+### useDataBinding
+
+```typescript
+const [value, setValue] = useDataBinding(path: string);
+```
+
+### useActions
+
+```typescript
+const { dispatch } = useActions();
+// dispatch(actionName: string, params: object)
+```
+
+### useAction
+
+```typescript
+const submitForm = useAction('submit_form');
+// submitForm(params: object)
+```
+
+### useIsVisible
+
+```typescript
+const isVisible = useIsVisible(condition?: VisibilityCondition);
+```
+
+### useFieldValidation
+
+```typescript
+const {
+  value,     // unknown
+  setValue,  // (value: unknown) => void
+  errors,    // string[]
+  validate,  // () => Promise<boolean>
+  isValid,   // boolean
+} = useFieldValidation(path: string, checks: ValidationCheck[]);
+```

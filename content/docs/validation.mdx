@@ -1,0 +1,141 @@
+---
+title: 验证
+description: 使用内置和自定义函数验证表单输入。
+---
+
+## 内置验证器
+
+json-render 包含常见的验证函数：
+
+- `required` — 值必须非空
+- `email` — 有效的电子邮件格式
+- `minLength` — 最小字符串长度
+- `maxLength` — 最大字符串长度
+- `pattern` — 匹配正则表达式模式
+- `min` — 最小数值
+- `max` — 最大数值
+
+## 在 JSON 中使用验证
+
+```json
+{
+  "type": "TextField",
+  "props": {
+    "label": "电子邮件",
+    "valuePath": "/form/email",
+    "checks": [
+      { "fn": "required", "message": "电子邮件为必填项" },
+      { "fn": "email", "message": "电子邮件格式无效" }
+    ],
+    "validateOn": "blur"
+  }
+}
+```
+
+## 带参数的验证
+
+```json
+{
+  "type": "TextField",
+  "props": {
+    "label": "密码",
+    "valuePath": "/form/password",
+    "checks": [
+      { "fn": "required", "message": "密码为必填项" },
+      {
+        "fn": "minLength",
+        "args": { "length": 8 },
+        "message": "密码必须至少为 8 个字符"
+      },
+      {
+        "fn": "pattern",
+        "args": { "pattern": "[A-Z]" },
+        "message": "必须包含至少一个大写字母"
+      }
+    ]
+  }
+}
+```
+
+## 自定义验证函数
+
+在您的目录中定义自定义验证器：
+
+```typescript
+const catalog = createCatalog({
+  components: { /* ... */ },
+  validationFunctions: {
+    isValidPhone: {
+      description: '验证电话号码格式',
+    },
+    isUniqueEmail: {
+      description: '检查电子邮件是否未注册',
+    },
+  },
+});
+```
+
+然后在您的 ValidationProvider 中实现它们：
+
+```tsx
+import { ValidationProvider } from '@json-render/react';
+
+function App() {
+  const customValidators = {
+    isValidPhone: (value) => {
+      const phoneRegex = /^\\+?[1-9]\\d{1,14}$/;
+      return phoneRegex.test(value);
+    },
+    isUniqueEmail: async (value) => {
+      const response = await fetch(`/api/check-email?email=${value}`);
+      const { available } = await response.json();
+      return available;
+    },
+  };
+
+  return (
+    <ValidationProvider functions={customValidators}>
+      {/* 您的 UI */}
+    </ValidationProvider>
+  );
+}
+```
+
+## 在组件中使用
+
+```tsx
+import { useFieldValidation } from '@json-render/react';
+
+function TextField({ element }) {
+  const { value, setValue, errors, validate } = useFieldValidation(
+    element.props.valuePath,
+    element.props.checks
+  );
+
+  return (
+    <div>
+      <label>{element.props.label}</label>
+      <input
+        value={value || ''}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={() => validate()}
+      />
+      {errors.map((error, i) => (
+        <p key={i} className="text-red-500 text-sm">{error}</p>
+      ))}
+    </div>
+  );
+}
+```
+
+## 验证时机
+
+使用 `validateOn` 控制验证何时运行：
+
+- `change` — 每次输入更改时验证
+- `blur` — 字段失去焦点时验证
+- `submit` — 仅在表单提交时验证
+
+## 下一步
+
+了解 [AI SDK 集成](./ai-sdk.mdx)。

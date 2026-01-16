@@ -1,0 +1,147 @@
+---
+title: 操作
+description: 使用命名操作安全地处理用户交互。
+---
+
+
+## 为什么使用命名操作？
+
+AI 不会生成任意代码，而是按名称声明_意图_。您的应用程序提供实现。这是一个核心保护规则。
+
+## 定义操作
+
+在您的目录中定义可用操作：
+
+```typescript
+const catalog = createCatalog({
+  components: { /* ... */ },
+  actions: {
+    submit_form: {
+      params: z.object({
+        formId: z.string(),
+      }),
+      description: '提交表单',
+    },
+    export_data: {
+      params: z.object({
+        format: z.enum(['csv', 'pdf', 'json']),
+        filters: z.object({
+          dateRange: z.string().optional(),
+        }).optional(),
+      }),
+    },
+    navigate: {
+      params: z.object({
+        url: z.string(),
+      }),
+    },
+  },
+});
+```
+
+## ActionProvider
+
+为您的应用提供操作处理程序：
+
+```tsx
+import { ActionProvider } from '@json-render/react';
+
+function App() {
+  const handlers = {
+    submit_form: async (params) => {
+      const response = await fetch('/api/submit', {
+        method: 'POST',
+        body: JSON.stringify({ formId: params.formId }),
+      });
+      return response.json();
+    },
+
+    export_data: async (params) => {
+      const blob = await generateExport(params.format, params.filters);
+      downloadBlob(blob, `export.${params.format}`);
+    },
+
+    navigate: (params) => {
+      window.location.href = params.url;
+    },
+  };
+
+  return (
+    <ActionProvider handlers={handlers}>
+      {/* 您的 UI */}
+    </ActionProvider>
+  );
+}
+```
+
+## 在组件中使用操作
+
+```tsx
+const Button = ({ element, onAction }) => (
+  <button onClick={() => onAction(element.props.action, {})}>
+    {element.props.label}
+  </button>
+);
+
+// 或使用 useAction hook
+import { useAction } from '@json-render/react';
+
+function SubmitButton() {
+  const submitForm = useAction('submit_form');
+
+  return (
+    <button onClick={() => submitForm({ formId: 'contact' })}>
+      提交
+    </button>
+  );
+}
+```
+
+## 带确认的操作
+
+AI 可以声明需要用户确认的操作：
+
+```json
+{
+  "type": "Button",
+  "props": {
+    "label": "删除账户",
+    "action": {
+      "name": "delete_account",
+      "params": { "userId": "123" },
+      "confirm": {
+        "title": "删除账户？",
+        "message": "此操作无法撤销。",
+        "variant": "danger"
+      }
+    }
+  }
+}
+```
+
+## 操作回调
+
+处理成功和错误状态：
+
+```json
+{
+  "type": "Button",
+  "props": {
+    "label": "保存",
+    "action": {
+      "name": "save_changes",
+      "params": { "documentId": "doc-1" },
+      "onSuccess": {
+        "set": { "/ui/savedMessage": "更改已保存！" }
+      },
+      "onError": {
+        "set": { "/ui/errorMessage": "$error.message" }
+      }
+    }
+  }
+}
+```
+
+## 下一步
+
+了解[条件可见性](./visibility.mdx)。

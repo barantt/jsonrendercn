@@ -1,0 +1,117 @@
+---
+title: 流式传输
+description: 在 AI 生成时渐进式渲染 UI。
+---
+
+## 流式传输的工作原理
+
+json-render 使用 JSONL（JSON 行）流式传输。当 AI 生成时，每一行代表一个补丁操作：
+
+```json
+{"op":"set","path":"/root","value":{"key":"root","type":"Card","props":{"title":"仪表板"}}}
+{"op":"add","path":"/root/children","value":{"key":"metric-1","type":"Metric","props":{"label":"收入"}}}
+{"op":"add","path":"/root/children","value":{"key":"metric-2","type":"Metric","props":{"label":"用户"}}}
+```
+
+## useUIStream Hook
+
+该 hook 处理解析和状态管理：
+
+```tsx
+import { useUIStream } from '@json-render/react';
+
+function App() {
+  const {
+    tree,        // 当前 UI 树状态
+    isLoading,   // 流式传输时为 true
+    error,       // 发生的任何错误
+    generate,    // 开始生成的函数
+    abort,       // 取消流式传输的函数
+  } = useUIStream({
+    endpoint: '/api/generate',
+  });
+}
+```
+
+## 补丁操作
+
+支持的操作：
+
+- `set` — 设置路径的值（如果需要则创建）
+- `add` — 添加到路径的数组
+- `replace` — 替换路径的值
+- `remove` — 删除路径的值
+
+## 路径格式
+
+路径使用基于键的格式来表示元素：
+
+```bash
+/root              -> 根元素
+/root/children     -> 根的子元素
+/elements/card-1   -> 键为 "card-1" 的元素
+/elements/card-1/children -> card-1 的子元素
+```
+
+## 服务器端设置
+
+确保您的 API 路由正确流式传输：
+
+```typescript
+export async function POST(req: Request) {
+  const { prompt } = await req.json();
+
+  const result = streamText({
+    model: 'anthropic/claude-opus-4.5',
+    system: generateCatalogPrompt(catalog),
+    prompt,
+  });
+
+  // 作为流式响应返回
+  return new Response(result.textStream, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+      'Cache-Control': 'no-cache',
+    },
+  });
+}
+```
+
+## 渐进式渲染
+
+当树发生变化时，Renderer 会自动更新：
+
+```tsx
+function App() {
+  const { tree, isLoading } = useUIStream({ endpoint: '/api/generate' });
+
+  return (
+    <div>
+      {isLoading && <LoadingIndicator />}
+      <Renderer tree={tree} registry={registry} />
+    </div>
+  );
+}
+```
+
+## 中止流式传输
+
+```tsx
+function App() {
+  const { isLoading, generate, abort } = useUIStream({
+    endpoint: '/api/generate',
+  });
+
+  return (
+    <div>
+      <button onClick={() => generate('创建仪表板')}>
+        生成
+      </button>
+      {isLoading && (
+        <button onClick={abort}>取消</button>
+      )}
+    </div>
+  );
+}
+```

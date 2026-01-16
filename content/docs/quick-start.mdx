@@ -1,0 +1,158 @@
+---
+title: 快速开始
+description: 在 5 分钟内开始使用 json-render。
+---
+
+## 1. 定义您的目录
+
+创建一个目录，定义 AI 可以使用的组件：
+
+```typescript
+// lib/catalog.ts
+import { createCatalog } from '@json-render/core';
+import { z } from 'zod';
+
+export const catalog = createCatalog({
+  components: {
+    Card: {
+      props: z.object({
+        title: z.string(),
+        description: z.string().nullable(),
+      }),
+      hasChildren: true,
+    },
+    Button: {
+      props: z.object({
+        label: z.string(),
+        action: z.string(),
+      }),
+    },
+    Text: {
+      props: z.object({
+        content: z.string(),
+      }),
+    },
+  },
+  actions: {
+    submit: {
+      params: z.object({ formId: z.string() }),
+    },
+    navigate: {
+      params: z.object({ url: z.string() }),
+    },
+  },
+});
+```
+
+## 2. 创建您的组件
+
+注册渲染每个目录类型的 React 组件：
+
+```tsx
+// components/registry.tsx
+export const registry = {
+  Card: ({ element, children }) => (
+    <div className="p-4 border rounded-lg">
+      <h2 className="font-bold">{element.props.title}</h2>
+      {element.props.description && (
+        <p className="text-gray-600">{element.props.description}</p>
+      )}
+      {children}
+    </div>
+  ),
+  Button: ({ element, onAction }) => (
+    <button
+      className="px-4 py-2 bg-blue-500 text-white rounded"
+      onClick={() => onAction(element.props.action, {})}
+    >
+      {element.props.label}
+    </button>
+  ),
+  Text: ({ element }) => (
+    <p>{element.props.content}</p>
+  ),
+};
+```
+
+## 3. 创建 API 路由
+
+设置流式 API 路由用于 AI 生成：
+
+```typescript
+// app/api/generate/route.ts
+import { streamText } from 'ai';
+import { generateCatalogPrompt } from '@json-render/core';
+import { catalog } from '@/lib/catalog';
+
+export async function POST(req: Request) {
+  const { prompt } = await req.json();
+  const systemPrompt = generateCatalogPrompt(catalog);
+
+  const result = streamText({
+    model: 'anthropic/claude-opus-4.5',
+    system: systemPrompt,
+    prompt,
+  });
+
+  return new Response(result.textStream, {
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+  });
+}
+```
+
+## 4. 渲染 UI
+
+使用提供器和渲染器来显示 AI 生成的 UI：
+
+```tsx
+// app/page.tsx
+'use client';
+
+import { DataProvider, ActionProvider, VisibilityProvider, Renderer, useUIStream } from '@json-render/react';
+import { registry } from '@/components/registry';
+
+export default function Page() {
+  const { tree, isLoading, generate } = useUIStream({
+    endpoint: '/api/generate',
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    generate(formData.get('prompt') as string);
+  };
+
+  return (
+    <DataProvider initialData={{}}>
+      <VisibilityProvider>
+        <ActionProvider handlers={{
+          submit: (params) => console.log('Submit:', params),
+          navigate: (params) => console.log('Navigate:', params),
+        }}>
+          <form onSubmit={handleSubmit}>
+            <input
+              name="prompt"
+              placeholder="描述您想要的内容..."
+              className="border p-2 rounded"
+            />
+            <button type="submit" disabled={isLoading}>
+              生成
+            </button>
+          </form>
+
+          <div className="mt-8">
+            <Renderer tree={tree} registry={registry} />
+          </div>
+        </ActionProvider>
+      </VisibilityProvider>
+    </DataProvider>
+  );
+}
+```
+
+## 后续步骤
+
+- 深入了解[目录](./catalog.mdx)
+- 探索用于动态值的[数据绑定](./data-binding.mdx)
+- 添加[操作](./actions.mdx)以实现交互
+- 实现[条件可见性](./visibility.mdx)

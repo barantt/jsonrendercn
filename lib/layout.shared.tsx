@@ -1,9 +1,10 @@
-import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
+import type {BaseLayoutProps} from 'fumadocs-ui/layouts/shared';
 
 export function baseOptions(): BaseLayoutProps {
-  return {
-    nav: {
-      title: 'My App',
-    },
-  };
+    return {
+        githubUrl: 'https://github.com/vercel-labs/json-render',
+        nav: {
+            title: 'JSON-Render 中文文档',
+        }
+    };
 }

@@ -1,0 +1,21 @@
+{
+  "pages": [
+    "---开始使用---",
+    "index",
+    "installation",
+    "quick-start",
+    "---核心概念---",
+    "catalog",
+    "components",
+    "data-binding",
+    "actions",
+    "visibility",
+    "validation",
+    "---指南---",
+    "ai-sdk",
+    "streaming",
+    "---API参考---",
+    "api-core",
+    "api-react"
+  ]
+}

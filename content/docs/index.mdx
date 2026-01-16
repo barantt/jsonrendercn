@@ -1,13 +1,27 @@
 ---
-title: Hello World
-description: Your first document
+title: 介绍
+description: 可预测、有保护、快速。让用户通过提示词生成仪表板、小部件、应用程序和数据可视化。
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
 
-## What is Next?
+## 什么是 json-render？
 
-<Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
-</Cards>
+json-render 让最终用户能够通过自然语言提示词生成 UI — 安全地限制在您定义的组件范围内。您设置保护规则：存在哪些组件、它们接受哪些属性、有哪些可用的操作。AI 生成符合您模式的 JSON，您的组件原生渲染它。
+
+## 为什么选择 json-render？
+
+### 有保护
+AI 只能使用您目录中的组件。没有任意代码生成。
+
+### 可预测
+JSON 输出每次都符合您的模式。操作按名称声明，您控制它们的功能。
+
+### 快速
+在模型响应时流式渲染。无需等待完成。
+
+## 工作原理
+
+1. 定义保护规则 — AI 可以使用哪些组件、操作和数据绑定
+2. 用户提示 — 最终用户用自然语言描述他们想要什么
+3. AI 生成 JSON — 输出始终可预测，受您的目录约束
+4. 快速渲染 — 在模型响应时流式和渐进式渲染
