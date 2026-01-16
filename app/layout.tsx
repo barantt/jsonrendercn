@@ -1,8 +1,9 @@
 import {RootProvider} from 'fumadocs-ui/provider/next';
 import './global.css';
 import {Inter} from 'next/font/google';
-import localFont from "next/dist/compiled/@next/font/dist/local";
 import {Metadata} from "next";
+import {GoogleAnalytics} from '@next/third-parties/google'
+
 
 const inter = Inter({
     subsets: ['latin'],
@@ -65,6 +66,7 @@ export default function Layout({children}: LayoutProps<'/'>) {
         <html lang="zh" className={inter.className} suppressHydrationWarning>
         <body className='flex flex-col min-h-screen'>
         <RootProvider>{children}</RootProvider>
+        <GoogleAnalytics gaId="G-957SHQJH3M"/>
         </body>
         </html>
     );
