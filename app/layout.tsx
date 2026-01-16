@@ -1,53 +1,53 @@
-import { RootProvider } from 'fumadocs-ui/provider/next';
+import {RootProvider} from 'fumadocs-ui/provider/next';
 import './global.css';
-import { Inter } from 'next/font/google';
+import {Inter} from 'next/font/google';
 import localFont from "next/dist/compiled/@next/font/dist/local";
 import {Metadata} from "next";
 
 const inter = Inter({
-  subsets: ['latin'],
+    subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
     metadataBase: new URL("https://jsonrendercn.com"),
     title: {
-        default: "json-render | AI-generated UI with guardrails",
+        default: "json-render | 带有防护机制的 AI 生成 UI",
         template: "%s | json-render",
     },
     description:
-        "Let users generate dashboards, widgets, apps, and data visualizations from prompts — safely constrained to components you define.",
+        "让用户通过提示词生成仪表板、小部件、应用程序和数据可视化 — 安全地限定在您定义的组件范围内。",
     keywords: [
         "json-render",
-        "AI UI generation",
-        "React components",
-        "guardrails",
-        "structured output",
-        "dashboard builder",
+        "AI UI 生成",
+        "React 组件",
+        "安全防护",
+        "结构化输出",
+        "仪表板构建器",
     ],
-    authors: [{ name: "Vercel Labs" }],
+    authors: [{name: "Vercel Labs"}],
     creator: "Vercel Labs",
     openGraph: {
         type: "website",
-        locale: "en_US",
+        locale: "zh_CN",
         url: "https://jsonrendercn.com",
         siteName: "json-render",
-        title: "json-render | AI-generated UI with guardrails",
+        title: "json-render | 带有防护机制的 AI 生成 UI",
         description:
-            "Let users generate dashboards, widgets, apps, and data visualizations from prompts — safely constrained to components you define.",
+            "让用户通过提示词生成仪表板、小部件、应用程序和数据可视化 — 安全地限定在您定义的组件范围内。",
         images: [
             {
                 url: "/og",
                 width: 1200,
                 height: 630,
-                alt: "json-render - AI-generated UI with guardrails",
+                alt: "json-render - 带有防护机制的 AI 生成 UI",
             },
         ],
     },
     twitter: {
         card: "summary_large_image",
-        title: "json-render | AI-generated UI with guardrails",
+        title: "json-render | 带有防护机制的 AI 生成 UI",
         description:
-            "Let users generate dashboards, widgets, apps, and data visualizations from prompts — safely constrained to components you define.",
+            "让用户通过提示词生成仪表板、小部件、应用程序和数据可视化 — 安全地限定在您定义的组件范围内。",
         images: ["/og"],
         creator: "@verabornnot",
     },
@@ -60,12 +60,12 @@ export const metadata: Metadata = {
     },
 };
 
-export default function Layout({ children }: LayoutProps<'/'>) {
-  return (
-    <html lang="en" className={inter.className} suppressHydrationWarning>
-      <body className='flex flex-col min-h-screen'>
+export default function Layout({children}: LayoutProps<'/'>) {
+    return (
+        <html lang="en" className={inter.className} suppressHydrationWarning>
+        <body className='flex flex-col min-h-screen'>
         <RootProvider>{children}</RootProvider>
-      </body>
-    </html>
-  );
+        </body>
+        </html>
+    );
 }
